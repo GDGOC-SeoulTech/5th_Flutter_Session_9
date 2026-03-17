@@ -137,8 +137,10 @@ timezone: ^0.11.0
 
 `ios/Runner/Info.plist`에 아래 내용을 추가합니다.
 
+```
 <key>NSUserNotificationUsageDescription</key>
 <string>푸쉬 알림을 수신하기 위해 권한이 필요합니다.</string>
+```
 
 <img width="1586" height="419" alt="image" src="https://github.com/user-attachments/assets/38f4c709-7f21-4029-bcf8-517b1eef0042" />
 
