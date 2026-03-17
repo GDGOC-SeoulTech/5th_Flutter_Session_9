@@ -25,7 +25,23 @@ Future<void> main() async {
     settings: initializationSettings,
   );
 
+  await requestNotificationPermissions();
+
   runApp(const MyApp());
+}
+
+Future<void> requestNotificationPermissions() async {
+  await flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin
+      >()
+      ?.requestNotificationsPermission();
+
+  await flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<
+        IOSFlutterLocalNotificationsPlugin
+      >()
+      ?.requestPermissions(alert: true, badge: true, sound: true);
 }
 
 Future<void> showSimpleNotification() async {
@@ -72,7 +88,7 @@ Future<void> scheduleNotification() async {
     payload: 'payload',
     scheduledDate: tz.TZDateTime.now(tz.local).add(const Duration(seconds: 5)),
     notificationDetails: notificationDetails,
-    androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+    androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
   );
 }
 
