@@ -101,8 +101,9 @@ timezone: ^0.11.0
 
 ```xml
 <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
-<uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
 <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+<uses-permission android:name="android.permission.VIBRATE" />
+<uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
 ```
 
 그리고 `<application ...>` 태그 내부에 다음 receiver도 추가합니다.
@@ -122,9 +123,13 @@ timezone: ^0.11.0
         <action android:name="com.htc.intent.action.QUICKBOOT_POWERON"/>
     </intent-filter>
 </receiver>
+
+<receiver
+    android:exported="false"
+    android:name="com.dexterous.flutterlocalnotifications.FlutterLocalNotificationsReceiver"/>
 ```
 
-<img width="1586" height="764" alt="image" src="https://github.com/user-attachments/assets/60fc9eef-b123-4982-8b59-d672029490fc" />
+<img width="1546" height="849" alt="image" src="https://github.com/user-attachments/assets/eecb4345-f1a5-4752-83b9-2aa274bfaa57" />
 
 
 
