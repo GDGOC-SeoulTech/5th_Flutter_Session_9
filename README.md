@@ -5,13 +5,48 @@
 
 ## 이번 주에는
 
-- [flutter_local_notifications](https://pub.dev/packages/flutter_local_notifications)를 사용해 push notification 구현하기
+- Notification이 작동하는 원리 배우기
+- [flutter_local_notifications](https://pub.dev/packages/flutter_local_notifications)를 사용해 notification 구현하기
 - 플랫폼별 알림 권한 설정하기
 - 알림 초기화하기
 - 즉시 알림 구현하기
 - 예약 알림 구현하기
 
 <br />
+
+## Notification이 작동하는 원리
+
+알림은 앱이 직접 띄우는 것이 아니라, OS(Android / iOS)가 대신 관리하고 표시하는데요, 그래서 앱이 꺼져 있어도 알림 표시되거나, 시스템 설정에서 알림 ON/OFF를 할 수 있는 것입니다!
+
+Android 8.0(API 26)+부터는 모든 알림이 Channel 기반입니다.
+
+```
+App → Notification → Channel → OS → User
+```
+
+Channel이란 "알림을 그룹화하는 단위"라고 할 수 있는데요, Channel은 한 번 생성되면 수정 불가하고, importance, sound 변경도 불가합니다. 
+
+> Channel을 쓰는 이유: 사용자 입장에서 채팅, 댓글, 광고 등 서로 다른 알림 종류에 대해 정교하게 제어할 수 있도록 구분하기 위함입니다!
+>
+> <img width="496" height="898" alt="image" src="https://github.com/user-attachments/assets/1e14101a-c3dd-4146-8847-6f28b992582f" />
+>
+> 그래서 안드로이드에는 오늘 구현할 알림 두 종류가 각각 표시되는 것을 확인할 수 있습니다!
+
+<br />
+반대로 iOS는 Channel 개념이 없고, `UNUserNotificationCenter`라는 클래스에서 처리하도록 만들어졌습니다!
+
+```
+App → UNUserNotificationCenter → OS → User
+```
+
+그래서 iOS에서는 알림 제어가 단순한데, 앱 단위 ON/OFF하거나 소리 / 배너 / 배지 설정만 할 수 있습니다.
+
+<img width="469" height="999" alt="image" src="https://github.com/user-attachments/assets/dfd8629c-60a7-4e30-b912-9a678a3f8b65" />
+
+<br />
+
+# 실습
+
 
 ## Step 1
 
@@ -145,7 +180,7 @@ import flutter_local_notifications
 
 ## Step 3
 
-#### 4. 알림 서비스 `flutter_local_notifications` 초기화하기
+#### 4. 알림 서비스 `flutter_local_notifications` 초기화 및 권한 요청하기
 
 `lib/main.dart`를 아래처럼 작성합니다.
 
@@ -177,7 +212,23 @@ Future<void> main() async {
     settings: initializationSettings,
   );
 
+  await requestNotificationPermissions();
+
   runApp(const MyApp());
+}
+
+Future<void> requestNotificationPermissions() async {
+  await flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin
+      >()
+      ?.requestNotificationsPermission();
+
+  await flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<
+        IOSFlutterLocalNotificationsPlugin
+      >()
+      ?.requestPermissions(alert: true, badge: true, sound: true);
 }
 
 class MyApp extends StatelessWidget {
@@ -206,10 +257,13 @@ class NotificationPage extends StatelessWidget {
 }
 ```
 
+> `runApp(..)`을 호출하기 전, `await requestNotificationPermissions()`으로 플랫폼별 알림 권한을 직접 요청하고 있습니다!
+> 구현과 기기 버전에 따라 알림 권한 정책이 다르므로, 이처럼 직접 요청을 하는 것이 중요합니다.
+
 이제 앱을 다시 빌드하면 다음과 같이 알림 권한을 묻는 것을 확인할 수 있습니다.
 
 <img width="467" height="995" alt="image" src="https://github.com/user-attachments/assets/a639dc46-6bee-48e8-afc2-0df75d89763e" />
-
+<img width="496" height="898" alt="image" src="https://github.com/user-attachments/assets/56a0f68f-0449-4b01-9338-b99c448250eb" />
 
 
 ## Step 4
@@ -315,7 +369,9 @@ body: Center(
 <img width="428" height="152" alt="image" src="https://github.com/user-attachments/assets/26ff180f-020a-496d-8492-0616b80927f2" />
 
 
-전체 `main.dart`
+---
+
+#### 최종 `main.dart`
 
 ```dart
 import 'package:flutter/material.dart';
@@ -345,7 +401,23 @@ Future<void> main() async {
     settings: initializationSettings,
   );
 
+  await requestNotificationPermissions();
+
   runApp(const MyApp());
+}
+
+Future<void> requestNotificationPermissions() async {
+  await flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin
+      >()
+      ?.requestNotificationsPermission();
+
+  await flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<
+        IOSFlutterLocalNotificationsPlugin
+      >()
+      ?.requestPermissions(alert: true, badge: true, sound: true);
 }
 
 Future<void> showSimpleNotification() async {
@@ -392,7 +464,7 @@ Future<void> scheduleNotification() async {
     payload: 'payload',
     scheduledDate: tz.TZDateTime.now(tz.local).add(const Duration(seconds: 5)),
     notificationDetails: notificationDetails,
-    androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+    androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
   );
 }
 
